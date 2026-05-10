@@ -1,12 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
-// ✅ Authentification locale — aucun service externe requis
-// Le mot de passe est stocké dans la variable d'environnement VITE_ADMIN_PASSWORD
-// L'email est stocké dans VITE_ADMIN_EMAIL
-
 interface AuthContextType {
   isAdmin: boolean
-  loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => void
 }
@@ -15,17 +10,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD as string
-const SESSION_KEY = 'luxhaven_admin_session'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    return sessionStorage.getItem(SESSION_KEY) === 'true'
+    try {
+      return sessionStorage.getItem('lh_admin') === 'ok'
+    } catch {
+      return false
+    }
   })
-  const [loading] = useState(false)
 
   const signIn = async (email: string, password: string) => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, 'true')
+    if (
+      email.trim() === (ADMIN_EMAIL || '').trim() &&
+      password === (ADMIN_PASSWORD || '')
+    ) {
+      try { sessionStorage.setItem('lh_admin', 'ok') } catch {}
       setIsAdmin(true)
       return { error: null }
     }
@@ -33,12 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = () => {
-    sessionStorage.removeItem(SESSION_KEY)
+    try { sessionStorage.removeItem('lh_admin') } catch {}
     setIsAdmin(false)
   }
 
   return (
-    <AuthContext.Provider value={{ isAdmin, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ isAdmin, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )
@@ -46,6 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth doit être utilisé dans AuthProvider')
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
   return ctx
 }
