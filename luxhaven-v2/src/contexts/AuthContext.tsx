@@ -1,48 +1,44 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { Session, User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { createContext, useContext, useState, ReactNode } from 'react'
+
+// ✅ Authentification locale — aucun service externe requis
+// Le mot de passe est stocké dans la variable d'environnement VITE_ADMIN_PASSWORD
+// L'email est stocké dans VITE_ADMIN_EMAIL
 
 interface AuthContextType {
-  session: Session | null
-  user: User | null
+  isAdmin: boolean
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signOut: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signOut: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD as string
+const SESSION_KEY = 'luxhaven_admin_session'
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return sessionStorage.getItem(SESSION_KEY) === 'true'
+  })
+  const [loading] = useState(false)
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error: error as Error | null }
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, 'true')
+      setIsAdmin(true)
+      return { error: null }
+    }
+    return { error: 'Email ou mot de passe incorrect.' }
   }
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
+  const signOut = () => {
+    sessionStorage.removeItem(SESSION_KEY)
+    setIsAdmin(false)
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ isAdmin, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

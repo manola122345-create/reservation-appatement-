@@ -17,7 +17,7 @@ export default function AdminLogin() {
     setError('')
     const { error } = await signIn(form.email, form.password)
     if (error) {
-      setError('Email ou mot de passe incorrect.')
+      setError(error)
       setLoading(false)
     } else {
       navigate('/admin')
@@ -27,7 +27,6 @@ export default function AdminLogin() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--lux-navy)] px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--lux-gold)] text-[var(--lux-navy)] font-display text-2xl font-bold">
             LH

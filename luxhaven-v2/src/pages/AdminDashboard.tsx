@@ -21,7 +21,7 @@ const EMPTY_FORM = {
 }
 
 export default function AdminDashboard() {
-  const { signOut, user } = useAuth()
+  const { signOut } = useAuth()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('dashboard')
   const [listings, setListings] = useState<Listing[]>([])
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     fetchAll()
   }
 
-  const handleLogout = async () => { await signOut(); navigate('/admin/login') }
+  const handleLogout = () => { signOut(); navigate('/admin/login') }
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
           ))}
         </nav>
         <div className="border-t border-white/10 p-4">
-          <p className="mb-3 truncate px-4 text-xs text-slate-400">{user?.email}</p>
+          <p className="mb-3 truncate px-4 text-xs text-slate-400">{import.meta.env.VITE_ADMIN_EMAIL}</p>
           <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-slate-400 hover:bg-white/5 hover:text-white transition">
             <LogOut className="h-4 w-4" /> Déconnexion
           </button>
