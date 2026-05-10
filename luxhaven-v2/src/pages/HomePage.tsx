@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, CalendarCheck, Users, Search, ShieldCheck, CreditCard, Headset, Star, ArrowUpRight } from 'lucide-react'
+import { MapPin, ShieldCheck, CreditCard, Headset, Star, ArrowUpRight } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../lib/supabase'
@@ -16,20 +16,11 @@ const categories = [
 export default function HomePage() {
   const navigate = useNavigate()
   const [featured, setFeatured] = useState<Listing[]>([])
-  const [search, setSearch] = useState({ location: '', dates: '', guests: '' })
-
   useEffect(() => {
     supabase.from('listings').select('*').eq('available', true).limit(3).then(({ data }) => {
       if (data) setFeatured(data as Listing[])
     })
   }, [])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (search.location) params.set('location', search.location)
-    navigate(`/listings?${params.toString()}`)
-  }
 
   return (
     <div className="bg-white text-slate-900">
@@ -49,23 +40,16 @@ export default function HomePage() {
               <p className="text-lg text-slate-200">
                 LuxHaven réunit les plus beaux appartements haut de gamme avec un paiement en ligne sécurisé.
               </p>
-              <form onSubmit={handleSearch} className="grid gap-3 rounded-2xl bg-white/95 p-4 shadow-2xl md:grid-cols-[1.2fr_1fr_0.8fr_auto]">
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                  <MapPin className="h-5 w-5 shrink-0 text-[var(--lux-gold)]" />
-                  <input className="w-full bg-transparent text-sm text-slate-700 outline-none" placeholder="Ville, quartier..." value={search.location} onChange={e => setSearch(s => ({ ...s, location: e.target.value }))} />
-                </div>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                  <CalendarCheck className="h-5 w-5 shrink-0 text-[var(--lux-gold)]" />
-                  <input className="w-full bg-transparent text-sm text-slate-700 outline-none" placeholder="Dates" value={search.dates} onChange={e => setSearch(s => ({ ...s, dates: e.target.value }))} />
-                </div>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                  <Users className="h-5 w-5 shrink-0 text-[var(--lux-gold)]" />
-                  <input className="w-full bg-transparent text-sm text-slate-700 outline-none" placeholder="Personnes" value={search.guests} onChange={e => setSearch(s => ({ ...s, guests: e.target.value }))} />
-                </div>
-                <button type="submit" className="flex items-center justify-center gap-2 rounded-xl bg-[var(--lux-navy)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--lux-navy)]/90">
-                  <Search className="h-4 w-4" /> Rechercher
+              <div className="flex gap-4 pt-2">
+                <button onClick={() => navigate('/listings')}
+                  className="rounded-full bg-[var(--lux-gold)] px-8 py-3 text-sm font-semibold text-[var(--lux-navy)] shadow-lg transition hover:-translate-y-0.5">
+                  Voir nos appartements
                 </button>
-              </form>
+                <a href="#contact"
+                  className="rounded-full border border-white/50 px-8 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+                  Nous contacter
+                </a>
+              </div>
             </div>
           </div>
         </div>
