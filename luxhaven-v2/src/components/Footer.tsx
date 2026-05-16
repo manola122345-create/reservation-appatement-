@@ -1,69 +1,64 @@
 import { Link } from 'react-router-dom'
-import { Phone, Mail } from 'lucide-react'
+import { Send, Mail } from 'lucide-react'
 
-const links = [
-  { label: 'Appartements', href: '/listings' },
-  { label: 'Colocation', href: '/listings?type=Colocation' },
-  { label: 'Court séjour', href: '/listings?type=Courte+durée' },
-  { label: 'Long séjour', href: '/listings?type=Longue+durée' },
-  { label: 'Contact', href: '/#contact' },
-]
+const TELEGRAM = 'https://t.me/alicevip4'
 
-export default function Footer() {
+interface FooterProps { lang?: 'fr'|'en' }
+
+export default function Footer({ lang = 'fr' }: FooterProps) {
+  const t = (fr: string, en: string) => lang === 'fr' ? fr : en
+
   return (
-    <footer className="bg-[var(--lux-navy)] py-12 text-white">
-      <div className="mx-auto w-full max-w-7xl px-6">
+    <footer className="bg-[#0A1F44] py-12 text-white">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lux-gold)] text-[var(--lux-navy)] font-display font-bold">
-                LH
-              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A84C] text-[#0A1F44] font-bold">LH</div>
               <div>
                 <p className="font-display text-xl">LuxHaven</p>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Luxury Rentals</p>
               </div>
             </div>
             <p className="text-sm text-slate-300">
-              Plateforme premium pour appartements d'exception, avec paiement 100% sécurisé.
+              {t('Votre partenaire de confiance pour la location d\'appartements haut de gamme.', 'Your trusted partner for luxury apartment rentals.')}
             </p>
           </div>
 
           <div>
-            <p className="font-display text-lg">Navigation</p>
+            <p className="font-display text-lg">{t('Navigation', 'Navigation')}</p>
             <ul className="mt-4 space-y-2 text-sm text-slate-300">
-              {links.map((l) => (
-                <li key={l.label}>
-                  <Link to={l.href} className="hover:text-white transition">{l.label}</Link>
-                </li>
+              {[
+                { label: t('Appartements', 'Apartments'), href: '/listings' },
+                { label: t('À propos', 'About'), href: '/#about' },
+                { label: t('Équipe', 'Team'), href: '/#team' },
+                { label: t('Services', 'Services'), href: '/#services' },
+                { label: 'Contact', href: '/#contact' },
+              ].map(l => (
+                <li key={l.label}><a href={l.href} className="hover:text-white transition">{l.label}</a></li>
               ))}
             </ul>
           </div>
 
-          <div id="contact">
+          <div>
             <p className="font-display text-lg">Contact</p>
             <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[var(--lux-gold)]" />
-                +229 00 00 00 00
-              </p>
-              <p className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-[var(--lux-gold)]" />
-                contact@luxhaven.com
-              </p>
-              <div className="flex gap-3 pt-2">
-                {['Instagram', 'LinkedIn', 'Facebook'].map((s) => (
-                  <span key={s} className="rounded-full border border-slate-500 px-3 py-1 text-xs cursor-pointer hover:border-[var(--lux-gold)] transition">
-                    {s}
-                  </span>
-                ))}
-              </div>
+              <a href={TELEGRAM} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition">
+                <Send className="h-4 w-4 text-[#229ED9]" /> @alicevip4 (Telegram)
+              </a>
+              <a href="mailto:contact@luxhaven.com" className="flex items-center gap-2 hover:text-white transition">
+                <Mail className="h-4 w-4 text-[#C9A84C]" /> contact@luxhaven.com
+              </a>
+              <a href={TELEGRAM} target="_blank" rel="noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                <Send className="h-4 w-4" /> Telegram
+              </a>
             </div>
           </div>
         </div>
 
         <div className="mt-10 border-t border-slate-700 pt-6 text-center text-xs text-slate-400">
-          © {new Date().getFullYear()} LuxHaven. Tous droits réservés.
+          © {new Date().getFullYear()} LuxHaven. {t('Tous droits réservés.', 'All rights reserved.')}
         </div>
       </div>
     </footer>

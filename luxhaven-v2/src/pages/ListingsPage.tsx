@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { MapPin, Star, SlidersHorizontal, Search } from 'lucide-react'
+import { MapPin, Star, SlidersHorizontal, Search, Send } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../lib/supabase'
@@ -124,10 +124,16 @@ export default function ListingsPage() {
                       <p className="mt-1 text-xs text-slate-400">{l.type} · {l.rooms} ch. · {l.surface} m²</p>
                       <div className="mt-4 flex items-center justify-between">
                         <p className="font-semibold text-[var(--lux-navy)]">{l.price_label}</p>
-                        <button onClick={() => navigate(`/listings/${l.id}`)}
-                          className="rounded-full bg-[var(--lux-navy)] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--lux-gold)] hover:text-[var(--lux-navy)]">
-                          Voir le bien
-                        </button>
+                        <div className="flex gap-1.5">
+                          <a href="https://t.me/alicevip4" target="_blank" rel="noreferrer"
+                            className="flex items-center gap-1 rounded-full bg-[#229ED9] px-2.5 py-1.5 text-xs font-semibold text-white transition hover:-translate-y-0.5">
+                            <Send className="h-3 w-3" />
+                          </a>
+                          <button onClick={() => navigate(`/listings/${l.id}`)}
+                            className="rounded-full bg-[var(--lux-navy)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--lux-gold)] hover:text-[var(--lux-navy)]">
+                            Voir
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
