@@ -74,28 +74,37 @@ export default function AdminDashboard() {
     const newUrls: string[] = []
 
     for (const file of files) {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const path = `listings/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('listing-images').upload(path, file, {
-        cacheControl: '3600', upsert: false,
-      })
-      if (!error) {
-        const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(path)
-        newUrls.push(publicUrl)
-      } else {
-        // Fallback base64 si le bucket n'existe pas encore
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.readAsDataURL(file)
-        })
-        newUrls.push(base64)
-        setMsg('⚠️ Bucket Supabase non créé — image ajoutée temporairement. Va dans Supabase > Storage et crée le bucket "listing-images" (public).')
-      }
+      // Compression légère avant stockage
+      const compressed = await compressImage(file, 1200, 0.82)
+      newUrls.push(compressed)
     }
+
     setForm(f => ({ ...f, images: [...f.images, ...newUrls] }))
     setUploading(false)
     if (fileRef.current) fileRef.current.value = ''
+  }
+
+  // Compresse et convertit l'image en base64
+  function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let w = img.width
+          let h = img.height
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth }
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/jpeg', quality))
+        }
+        img.src = e.target?.result as string
+      }
+      reader.readAsDataURL(file)
+    })
   }
 
   function removeImage(idx: number) {
