@@ -35,7 +35,7 @@ export default function ListingsPage() {
     : listings
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-[#F2F1EF] text-slate-900">
       <Navbar />
 
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -53,7 +53,7 @@ export default function ListingsPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
           {/* Sidebar filtres */}
-          <aside className="space-y-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-100 h-fit">
+          <aside className="space-y-6 rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-lg shadow-slate-100 h-fit">
             <div>
               <p className="flex items-center gap-2 font-display text-[var(--lux-navy)]">
                 <SlidersHorizontal className="h-4 w-4" /> Filtres

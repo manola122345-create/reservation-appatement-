@@ -35,7 +35,7 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-[#F2F1EF] text-slate-900">
       <Navbar />
       <div className="mx-auto flex max-w-lg flex-col items-center px-6 py-20 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--lux-gold)]/15">

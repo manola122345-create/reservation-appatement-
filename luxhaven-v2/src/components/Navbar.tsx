@@ -21,7 +21,7 @@ export default function Navbar({ lang = 'fr', setLang }: NavbarProps) {
   const navLinks = links(lang)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-[#F5F4F1]/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A84C] text-[#0A1F44] font-bold text-lg">LH</div>

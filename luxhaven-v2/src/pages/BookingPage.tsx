@@ -83,14 +83,14 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-[#F2F1EF] text-slate-900">
       <Navbar />
       <div className="mx-auto max-w-4xl px-6 py-12">
         <h1 className="font-display text-3xl text-[var(--lux-navy)]">Finaliser la réservation</h1>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Formulaire */}
-          <form onSubmit={handlePay} className="space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-100">
+          <form onSubmit={handlePay} className="space-y-5 rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-lg shadow-slate-100">
             <h2 className="font-display text-xl text-[var(--lux-navy)]">Vos informations</h2>
 
             {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
@@ -138,7 +138,7 @@ export default function BookingPage() {
           </form>
 
           {/* Résumé */}
-          <div className="space-y-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-100 h-fit">
+          <div className="space-y-4 rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-lg shadow-slate-100 h-fit">
             <img src={listing.images[0] || '/images/listing-1.jpg'} alt={listing.title} className="h-40 w-full rounded-xl object-cover" />
             <h3 className="font-display text-lg text-[var(--lux-navy)]">{listing.title}</h3>
             <p className="flex items-center gap-1 text-sm text-slate-500"><MapPin className="h-3.5 w-3.5" /> {listing.location}</p>

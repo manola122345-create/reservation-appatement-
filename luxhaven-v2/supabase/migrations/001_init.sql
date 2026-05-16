@@ -81,3 +81,25 @@ create policy "Admin upload images"
 create policy "Admin supprime images"
   on storage.objects for delete
   using (bucket_id = 'listing-images' and auth.role() = 'authenticated');
+
+-- ============================================
+-- STORAGE BUCKET pour les images
+-- ============================================
+-- Si le bucket n'existe pas encore, exécute ce SQL dans Supabase > SQL Editor
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'listing-images',
+  'listing-images',
+  true,
+  10485760, -- 10MB max par image
+  ARRAY['image/jpeg','image/jpg','image/png','image/webp']
+) on conflict (id) do nothing;
+
+create policy "Images publiques lisibles" on storage.objects
+  for select using (bucket_id = 'listing-images');
+
+create policy "Admin peut uploader" on storage.objects
+  for insert with check (bucket_id = 'listing-images');
+
+create policy "Admin peut supprimer" on storage.objects
+  for delete using (bucket_id = 'listing-images');

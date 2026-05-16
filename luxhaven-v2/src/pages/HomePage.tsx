@@ -61,7 +61,7 @@ export default function HomePage() {
   const t = (fr: string, en: string) => lang === 'fr' ? fr : en
 
   return (
-    <div className="bg-white text-slate-900">
+    <div className="bg-[#F2F1EF] text-slate-900">
       <Navbar lang={lang} setLang={setLang} />
 
       {/* HERO */}
@@ -109,7 +109,7 @@ export default function HomePage() {
       </section>
 
       {/* À PROPOS */}
-      <section id="about" className="bg-white py-20">
+      <section id="about" className="bg-[#F2F1EF] py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
             <div>
@@ -146,7 +146,7 @@ export default function HomePage() {
       </section>
 
       {/* CATÉGORIES */}
-      <section className="bg-slate-50 py-16">
+      <section className="bg-[#ECEAE6] py-16">
         <div className="mx-auto max-w-7xl px-6">
           <p className="text-sm uppercase tracking-[0.3em] text-[#C9A84C]">{t('Nos catégories', 'Our categories')}</p>
           <h2 className="mt-3 font-display text-3xl text-[#0A1F44]">{t('Que recherchez-vous ?', 'What are you looking for?')}</h2>
@@ -163,7 +163,7 @@ export default function HomePage() {
       </section>
 
       {/* APPARTEMENTS EN VEDETTE */}
-      <section className="bg-white py-16">
+      <section className="bg-[#F2F1EF] py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex items-end justify-between">
             <div>
@@ -217,13 +217,13 @@ export default function HomePage() {
       </section>
 
       {/* ÉQUIPE */}
-      <section id="team" className="bg-slate-50 py-16">
+      <section id="team" className="bg-[#ECEAE6] py-16">
         <div className="mx-auto max-w-7xl px-6">
           <p className="text-sm uppercase tracking-[0.3em] text-[#C9A84C]">{t('Notre équipe', 'Our team')}</p>
           <h2 className="mt-3 font-display text-3xl text-[#0A1F44]">{t('Des experts à votre service', 'Experts at your service')}</h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {team.map(m => (
-              <div key={m.name} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-100">
+              <div key={m.name} className="rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-lg shadow-slate-100">
                 <img src={m.img} alt={m.name} className="h-20 w-20 rounded-full object-cover" />
                 <h3 className="mt-4 font-display text-lg text-[#0A1F44]">{m.name}</h3>
                 <p className="text-sm font-medium text-[#C9A84C]">{t(m.role, m.roleEn)}</p>
@@ -240,7 +240,7 @@ export default function HomePage() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" className="bg-white py-16">
+      <section id="services" className="bg-[#F2F1EF] py-16">
         <div className="mx-auto max-w-7xl px-6">
           <p className="text-sm uppercase tracking-[0.3em] text-[#C9A84C]">{t('Nos services', 'Our services')}</p>
           <h2 className="mt-3 font-display text-3xl text-[#0A1F44]">{t('Ce que nous proposons', 'What we offer')}</h2>
@@ -259,7 +259,7 @@ export default function HomePage() {
       </section>
 
       {/* CONFIANCE */}
-      <section className="bg-slate-50 py-12">
+      <section className="bg-[#ECEAE6] py-12">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-6 sm:grid-cols-3">
             {[
@@ -278,7 +278,7 @@ export default function HomePage() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" className="bg-white py-20">
+      <section id="contact" className="bg-[#F2F1EF] py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 lg:grid-cols-2">
             <div>

@@ -4,6 +4,8 @@
 :root {
   --lux-navy: #0A1F44;
   --lux-gold: #C9A84C;
+  --lux-bg: #F2F1EF;
+  --lux-bg-alt: #ECEAE6;
 }
 
 * { box-sizing: border-box; }
@@ -11,6 +13,8 @@
 body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  background-color: var(--lux-bg);
+  color: #1a1a2e;
 }
 
 .font-display { font-family: 'Playfair Display', serif; }

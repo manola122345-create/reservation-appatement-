@@ -68,17 +68,32 @@ export default function AdminDashboard() {
   const activeListings = listings.filter(l => l.available).length
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
     setUploading(true)
-    const path = `listings/${Date.now()}-${file.name.replace(/\s/g, '_')}`
-    const { error } = await supabase.storage.from('listing-images').upload(path, file)
-    if (!error) {
-      const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(path)
-      setForm(f => ({ ...f, images: [...f.images, publicUrl] }))
-    } else {
-      setMsg('Erreur upload: ' + error.message)
+    const newUrls: string[] = []
+
+    for (const file of files) {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const path = `listings/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('listing-images').upload(path, file, {
+        cacheControl: '3600', upsert: false,
+      })
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(path)
+        newUrls.push(publicUrl)
+      } else {
+        // Fallback base64 si le bucket n'existe pas encore
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(file)
+        })
+        newUrls.push(base64)
+        setMsg('⚠️ Bucket Supabase non créé — image ajoutée temporairement. Va dans Supabase > Storage et crée le bucket "listing-images" (public).')
+      }
     }
+    setForm(f => ({ ...f, images: [...f.images, ...newUrls] }))
     setUploading(false)
     if (fileRef.current) fileRef.current.value = ''
   }
@@ -225,13 +240,13 @@ export default function AdminDashboard() {
                   { label: 'En attente', value: pending, color: 'text-amber-500' },
                   { label: 'Biens actifs', value: activeListings, color: 'text-[#0A1F44]' },
                 ].map(s => (
-                  <div key={s.label} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                  <div key={s.label} className="rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-sm">
                     <p className="text-sm text-slate-500">{s.label}</p>
                     <p className={`mt-2 font-serif text-3xl font-semibold ${s.color}`}>{s.value}</p>
                   </div>
                 ))}
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="rounded-2xl border border-slate-200 bg-[#FAF9F7] p-6 shadow-sm">
                 <h2 className="font-serif text-xl text-[#0A1F44] mb-4">Réservations récentes</h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
@@ -294,12 +309,12 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                       <button onClick={() => fileRef.current?.click()}
-                        className="flex h-24 w-32 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-[#C9A84C] transition">
+                        className="flex h-24 w-40 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-[#C9A84C] transition gap-1">
                         {uploading
-                          ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#C9A84C] border-t-transparent" />
-                          : <><UploadCloud className="h-6 w-6" /><span className="text-xs mt-1">Ajouter</span></>}
+                          ? <><div className="h-5 w-5 animate-spin rounded-full border-2 border-[#C9A84C] border-t-transparent" /><span className="text-xs">Upload...</span></>
+                          : <><UploadCloud className="h-6 w-6" /><span className="text-xs font-medium">Ajouter photos</span><span className="text-xs text-slate-300">Plusieurs à la fois</span></>}
                       </button>
-                      <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                      <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
                     </div>
                   </div>
 
@@ -542,7 +557,7 @@ export default function AdminDashboard() {
                   { label: 'Transactions payées', value: bookings.filter(b => b.payment_status === 'Payé').length, color: 'text-emerald-600' },
                   { label: 'Non payés', value: bookings.filter(b => b.payment_status === 'Non payé').length, color: 'text-amber-500' },
                 ].map(s => (
-                  <div key={s.label} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                  <div key={s.label} className="rounded-2xl border border-slate-200 bg-[#FAF9F7] p-5 shadow-sm">
                     <p className="text-sm text-slate-500">{s.label}</p>
                     <p className={`mt-1 font-serif text-2xl font-semibold ${s.color}`}>{s.value}</p>
                   </div>
