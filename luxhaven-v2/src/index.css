@@ -7,24 +7,11 @@
 :root {
   --lux-navy: #0A1F44;
   --lux-gold: #C9A84C;
-  --lux-bg: #F2F1EF;
-  --lux-bg-alt: #ECEAE6;
 }
-
-* { box-sizing: border-box; }
 
 body {
   font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  background-color: var(--lux-bg);
+  background-color: #F2F1EF;
 }
 
 .font-display { font-family: 'Playfair Display', serif; }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-
-@media print {
-  header, footer, button { display: none !important; }
-}
