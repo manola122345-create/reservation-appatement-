@@ -4,7 +4,8 @@ import { MapPin, Wifi, ParkingCircle, Snowflake, CookingPot, Building2, Shield,
   Users, CalendarCheck, Star, ArrowLeft, ChevronLeft, ChevronRight, Send, Key, Clock } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { supabase } from '../lib/supabase'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
 const TELEGRAM = 'https://t.me/alicevip4'
@@ -25,8 +26,8 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     if (!id) return
-    supabase.from('listings').select('*').eq('id', id).single().then(({ data }) => {
-      setListing(data as Listing)
+    getDoc(doc(db, 'listings', id)).then(snap => {
+      if (snap.exists()) setListing({ id: snap.id, ...snap.data() } as Listing)
       setLoading(false)
     })
   }, [id])

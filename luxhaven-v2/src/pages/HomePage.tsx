@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ShieldCheck, CreditCard, Headset, Star, ArrowUpRight, MapPin, Send, Home, BarChart3, Users } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { supabase } from '../lib/supabase'
+import { collection, getDocs, query, where, limit, orderBy } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
 const TELEGRAM = 'https://t.me/alicevip4'
@@ -40,9 +41,9 @@ export default function HomePage() {
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', interest: '', message: '' })
 
   useEffect(() => {
-    supabase.from('listings').select('*').eq('available', true).limit(3).then(({ data }) => {
-      if (data) setFeatured(data as Listing[])
-    })
+    getDocs(query(collection(db, 'listings'), where('available','==',true), limit(3)))
+      .then(snap => setFeatured(snap.docs.map(d => ({ id: d.id, ...d.data() })) as Listing[]))
+      .catch(() => {})
   }, [])
 
   const handleContact = (e: React.FormEvent) => {

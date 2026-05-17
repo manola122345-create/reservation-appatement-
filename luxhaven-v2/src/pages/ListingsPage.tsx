@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MapPin, Star, SlidersHorizontal, Search, Send } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { supabase } from '../lib/supabase'
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
 const TYPES = ['Tous', 'Longue durée', 'Courte durée', 'Colocation', 'Meublé']
@@ -23,10 +24,13 @@ export default function ListingsPage() {
 
   async function fetchListings() {
     setLoading(true)
-    let query = supabase.from('listings').select('*').eq('available', true).lte('price_amount', priceMax)
-    if (activeType !== 'Tous') query = query.eq('type', activeType)
-    const { data } = await query.order('created_at', { ascending: false })
-    setListings((data || []) as Listing[])
+    try {
+      const snap = await getDocs(query(collection(db, 'listings'), where('available','==',true), orderBy('created_at','desc')))
+      let data = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Listing[]
+      if (activeType !== 'Tous') data = data.filter(l => l.type === activeType)
+      data = data.filter(l => l.price_amount <= priceMax)
+      setListings(data)
+    } catch { setListings([]) }
     setLoading(false)
   }
 

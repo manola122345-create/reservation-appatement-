@@ -3,7 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { MapPin, Lock, CreditCard } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { supabase } from '../lib/supabase'
+import { collection, addDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
 interface LocationState {
@@ -36,9 +37,9 @@ export default function BookingPage() {
     setError('')
 
     // 1. Créer la réservation dans Supabase
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .insert({
+    let booking: any
+    try {
+      const ref = await addDoc(collection(db, 'bookings'), {
         listing_id: listing.id,
         listing_title: listing.title,
         client_name: form.name,
@@ -46,40 +47,21 @@ export default function BookingPage() {
         client_phone: form.phone,
         date_start: dates.start,
         date_end: dates.end,
-        guests,
-        nights,
-        amount: total,
+        guests, nights, amount: total,
         status: 'En attente',
         payment_status: 'Non payé',
+        created_at: new Date().toISOString(),
       })
-      .select()
-      .single()
-
-    if (bookingError || !booking) {
+      booking = { id: ref.id }
+    } catch {
       setError('Erreur lors de la création de la réservation.')
       setLoading(false)
       return
     }
 
     // 2. Appeler la Supabase Edge Function pour créer la session Stripe
-    const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-checkout-session', {
-      body: {
-        bookingId: booking.id,
-        listingTitle: listing.title,
-        amount: total,
-        successUrl: `${window.location.origin}/confirmation`,
-        cancelUrl: `${window.location.origin}/listings/${id}`,
-      },
-    })
-
-    if (stripeError || !stripeData?.url) {
-      setError('Erreur paiement. Réessaie ou contacte le support.')
-      setLoading(false)
-      return
-    }
-
-    // 3. Redirection vers Stripe Checkout
-    window.location.href = stripeData.url
+    // Redirection vers confirmation (Stripe à intégrer plus tard)
+    navigate(`/confirmation?booking_id=${booking.id}`)
   }
 
   return (
