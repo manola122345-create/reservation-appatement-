@@ -70,12 +70,20 @@ export default function AdminDashboard() {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
+
+    const totalAfter = form.images.length + files.length
+    if (totalAfter > 10) {
+      setMsg(`❌ Maximum 10 photos. Tu en as déjà ${form.images.length}, tu peux en ajouter ${10 - form.images.length} de plus.`)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
     setUploading(true)
     const newUrls: string[] = []
 
     for (const file of files) {
-      // Compression légère avant stockage
-      const compressed = await compressImage(file, 1200, 0.82)
+      // Compression agressive : max 800px, qualité 70%
+      const compressed = await compressImage(file, 800, 0.70)
       newUrls.push(compressed)
     }
 
