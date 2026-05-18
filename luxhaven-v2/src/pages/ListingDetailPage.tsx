@@ -5,6 +5,7 @@ import { MapPin, Wifi, ParkingCircle, Snowflake, CookingPot, Building2, Shield,
 import Navbar from '../components/Navbar'
 import { CONFIG } from '../config'
 import VisitModal from '../components/VisitModal'
+import BookingModal from '../components/BookingModal'
 import Footer from '../components/Footer'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
@@ -23,6 +24,8 @@ export default function ListingDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [imgIdx, setImgIdx] = useState(0)
+  const [showVisit, setShowVisit] = useState(false)
+  const [showBooking, setShowBooking] = useState(false)
   const [dates, setDates] = useState({ start: '', end: '' })
   const [guests, setGuests] = useState(1)
 
@@ -216,17 +219,17 @@ export default function ListingDetailPage() {
               </div>
             )}
 
-            <button onClick={() => sendTelegram('visite')}
+            <button onClick={() => setShowVisit(true)}
               className="w-full rounded-full border border-[#229ED9] py-2.5 text-sm font-semibold text-[#229ED9] flex items-center justify-center gap-2 transition hover:bg-[#229ED9] hover:text-white">
               <Send className="h-4 w-4" /> Planifier une visite
             </button>
 
-            <button onClick={() => sendTelegram('reservation')}
+            <button onClick={() => setShowBooking(true)}
               className="w-full rounded-full bg-[#C9A84C] py-3 text-sm font-semibold text-[#0A1F44] shadow-lg flex items-center justify-center gap-2 transition hover:-translate-y-0.5">
               ✅ Réserver maintenant
             </button>
 
-            <p className="text-center text-xs text-slate-400">Via Telegram · @alicevip4</p>
+            <p className="text-center text-xs text-slate-400">📱 Via Telegram · Réponse en 30 min</p>
           </div>
         </div>
       </div>

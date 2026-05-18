@@ -6,6 +6,7 @@ import { db } from '../lib/firebase'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import VisitModal from '../components/VisitModal'
+import BookingModal from '../components/BookingModal'
 import { CONFIG } from '../config'
 import { Listing } from '../types'
 
@@ -20,6 +21,7 @@ export default function ListingsPage() {
   const [locationFilter, setLocationFilter] = useState(searchParams.get('location') || '')
   const [priceMax, setPriceMax] = useState(10000)
   const [visitModal, setVisitModal] = useState<{ title: string; location: string } | null>(null)
+  const [bookingModal, setBookingModal] = useState<{ title: string; location: string; price: string } | null>(null)
 
   useEffect(() => { fetchListings() }, [activeType, priceMax])
 
@@ -43,6 +45,14 @@ export default function ListingsPage() {
     <div className="min-h-screen bg-[#F2F1EF] text-slate-900">
       <Navbar />
 
+      {bookingModal && (
+        <BookingModal
+          listingTitle={bookingModal.title}
+          listingLocation={bookingModal.location}
+          priceLabel={bookingModal.price}
+          onClose={() => setBookingModal(null)}
+        />
+      )}
       {visitModal && (
         <VisitModal
           listingTitle={visitModal.title}
@@ -149,6 +159,10 @@ export default function ListingsPage() {
                               className="flex items-center gap-1 rounded-full bg-[#229ED9] px-2.5 py-1.5 text-xs font-semibold text-white transition hover:-translate-y-0.5">
                               <Send className="h-3 w-3" />
                             </a>
+                            <button onClick={() => setBookingModal({ title: l.title, location: l.location, price: l.price_label })}
+                              className="rounded-full bg-[#C9A84C] px-3 py-1.5 text-xs font-semibold text-[#0A1F44] transition hover:-translate-y-0.5">
+                              Réserver
+                            </button>
                             <button onClick={() => navigate(`/listings/${l.id}`)}
                               className="rounded-full bg-[#0A1F44] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#C9A84C] hover:text-[#0A1F44]">
                               Voir
