@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShieldCheck, CreditCard, Headset, Star, ArrowUpRight, MapPin, Send, Home, BarChart3, Users } from 'lucide-react'
 import Navbar from '../components/Navbar'
+import { CONFIG } from '../config'
 import Footer from '../components/Footer'
 import { collection, getDocs, query, where, limit, orderBy } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
-const TELEGRAM = 'https://t.me/alicevip4'
+const TELEGRAM = CONFIG.telegram
 
 const stats = [
   { value: '150+', label: 'Biens loués', en: 'Properties rented' },
@@ -294,7 +295,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-widest text-slate-400">Telegram</p>
-                    <a href={TELEGRAM} target="_blank" rel="noreferrer" className="font-medium text-[#0A1F44] hover:text-[#229ED9]">@alicevip4</a>
+                    <a href={TELEGRAM} target="_blank" rel="noreferrer" className="font-medium text-[#0A1F44] hover:text-[#229ED9]">${CONFIG.telegramUsername}</a>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">

@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, Wifi, ParkingCircle, Snowflake, CookingPot, Building2, Shield,
   Users, CalendarCheck, Star, ArrowLeft, ChevronLeft, ChevronRight, Send, Key, Clock } from 'lucide-react'
 import Navbar from '../components/Navbar'
+import { CONFIG } from '../config'
+import VisitModal from '../components/VisitModal'
 import Footer from '../components/Footer'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { Listing } from '../types'
 
-const TELEGRAM = 'https://t.me/alicevip4'
+const TELEGRAM = CONFIG.telegram
 
 const amenityIcons: Record<string, React.ElementType> = {
   WiFi: Wifi, Parking: ParkingCircle, Climatisation: Snowflake,

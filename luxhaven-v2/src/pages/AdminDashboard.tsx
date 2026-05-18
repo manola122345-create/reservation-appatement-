@@ -21,7 +21,7 @@ const EMPTY_FORM = {
   title: '', location: '', type: 'Courte durée' as Listing['type'],
   price_label: '', price_amount: 0, price_unit: 'nuit' as 'nuit'|'mois',
   description: '', amenities: [] as string[], rooms: 1, surface: 30,
-  available: true, badge: '', images: [] as string[],
+  available: true, badge: '', images: [] as string[], bathrooms: 1,
 }
 
 function StatusBadge({ status }: { status: Booking['status'] }) {
@@ -351,6 +351,12 @@ export default function AdminDashboard() {
                       <label className="text-xs uppercase tracking-widest text-slate-400">Surface (m²)</label>
                       <input type="number" min="10" value={form.surface}
                         onChange={e => setForm(f => ({ ...f, surface: Number(e.target.value) }))}
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]" />
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-widest text-slate-400">Salles de bain</label>
+                      <input type="number" min="1" value={(form as any).bathrooms || 1}
+                        onChange={e => setForm(f => ({ ...f, bathrooms: Number(e.target.value) }))}
                         className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]" />
                     </div>
                     <div className="sm:col-span-2">

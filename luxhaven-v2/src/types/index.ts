@@ -10,6 +10,7 @@ export interface Listing {
   images: string[]
   amenities: string[]
   rooms: number
+  bathrooms?: number
   surface: number
   available: boolean
   badge?: string
