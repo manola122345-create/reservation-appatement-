@@ -6,6 +6,7 @@ import { db } from '../lib/firebase'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import VisitModal from '../components/VisitModal'
+import SkeletonCard from '../components/SkeletonCard'
 import BookingModal from '../components/BookingModal'
 import { CONFIG } from '../config'
 import { Listing } from '../types'
@@ -101,8 +102,8 @@ export default function ListingsPage() {
           {/* Grid */}
           <div>
             {loading ? (
-              <div className="flex h-60 items-center justify-center">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#C9A84C] border-t-transparent" />
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex h-60 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white text-slate-400">
@@ -117,7 +118,7 @@ export default function ListingsPage() {
                     <div key={l.id} className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
                       <div className="relative h-52 overflow-hidden">
                         <img src={l.images?.[0] || '/images/listing-1.jpg'} alt={l.title}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
                         <div className="absolute left-3 top-3 flex gap-2">
                           {l.badge && <span className="rounded-full bg-[#C9A84C] px-2.5 py-1 text-xs font-semibold text-[#0A1F44]">{l.badge}</span>}
                           <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">À louer</span>

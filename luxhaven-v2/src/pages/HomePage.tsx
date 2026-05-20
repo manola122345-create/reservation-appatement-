@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShieldCheck, CreditCard, Headset, Star, ArrowUpRight, MapPin, Send, Home, BarChart3, Users } from 'lucide-react'
 import Navbar from '../components/Navbar'
+import SkeletonCard from '../components/SkeletonCard'
 import { CONFIG } from '../config'
 import Footer from '../components/Footer'
 import { collection, getDocs, query, where, limit, orderBy } from 'firebase/firestore'
@@ -38,13 +39,33 @@ const services = [
 export default function HomePage() {
   const navigate = useNavigate()
   const [featured, setFeatured] = useState<Listing[]>([])
+  const [loadingFeatured, setLoadingFeatured] = useState(true)
   const [lang, setLang] = useState<'fr'|'en'>('fr')
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', interest: '', message: '' })
 
   useEffect(() => {
+    // Check cache first (30 min)
+    try {
+      const cached = sessionStorage.getItem('lh_featured')
+      const cachedTime = sessionStorage.getItem('lh_featured_time')
+      if (cached && cachedTime && Date.now() - Number(cachedTime) < 30 * 60 * 1000) {
+        setFeatured(JSON.parse(cached))
+        setLoadingFeatured(false)
+        return
+      }
+    } catch {}
+
     getDocs(query(collection(db, 'listings'), where('available','==',true), limit(3)))
-      .then(snap => setFeatured(snap.docs.map(d => ({ id: d.id, ...d.data() })) as Listing[]))
-      .catch(() => {})
+      .then(snap => {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Listing[]
+        setFeatured(data)
+        setLoadingFeatured(false)
+        try {
+          sessionStorage.setItem('lh_featured', JSON.stringify(data))
+          sessionStorage.setItem('lh_featured_time', String(Date.now()))
+        } catch {}
+      })
+      .catch(() => setLoadingFeatured(false))
   }, [])
 
   const handleContact = (e: React.FormEvent) => {
@@ -177,13 +198,15 @@ export default function HomePage() {
             </button>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {featured.length === 0 ? (
+            {loadingFeatured ? (
+              Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            ) : featured.length === 0 ? (
               <p className="text-slate-400 col-span-3 text-center py-10">{t('Aucun appartement disponible.', 'No apartments available.')}</p>
             ) : featured.map(l => (
               <div key={l.id} className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg shadow-slate-100">
                 <div className="relative h-56 overflow-hidden">
                   <img src={l.images[0] || '/images/listing-1.jpg'} alt={l.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
                   {l.badge && <span className="absolute left-3 top-3 rounded-full bg-[#C9A84C] px-3 py-1 text-xs font-semibold text-[#0A1F44]">{l.badge}</span>}
                   <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-emerald-700">{t('À louer', 'For rent')}</span>
                 </div>

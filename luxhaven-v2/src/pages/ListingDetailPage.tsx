@@ -166,8 +166,14 @@ export default function ListingDetailPage() {
                 <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Durée minimale : 1 an</li>
                 <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Durée maximale : 5 ans</li>
                 <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Revenu requis : 3× le loyer mensuel</li>
-                <li className="flex items-center gap-2"><span className="text-slate-400">✗</span> Animaux non acceptés</li>
-                <li className="flex items-center gap-2"><span className="text-slate-400">✗</span> Non-fumeur</li>
+                {(listing as any).petsAllowed
+                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> 🐾 Animaux acceptés</li>
+                  : <li className="flex items-center gap-2"><span className="text-red-400">✗</span> Animaux non acceptés</li>
+                }
+                {(listing as any).smokingAllowed
+                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> 🚬 Fumeur autorisé</li>
+                  : <li className="flex items-center gap-2"><span className="text-red-400">✗</span> Non-fumeur</li>
+                }
               </ul>
             </div>
           </div>

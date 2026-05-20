@@ -22,6 +22,7 @@ const EMPTY_FORM = {
   price_label: '', price_amount: 0, price_unit: 'nuit' as 'nuit'|'mois',
   description: '', amenities: [] as string[], rooms: 1, surface: 30,
   available: true, badge: '', images: [] as string[], bathrooms: 1,
+  petsAllowed: false, smokingAllowed: false,
 }
 
 function StatusBadge({ status }: { status: Booking['status'] }) {
@@ -76,10 +77,16 @@ export default function AdminDashboard() {
         img.onload = () => {
           const canvas = document.createElement('canvas')
           let w = img.width, h = img.height
+          // Limit to maxW
           if (w > maxW) { h = Math.round(h * maxW / w); w = maxW }
+          // Also limit height to 600px max for faster loading
+          if (h > 600) { w = Math.round(w * 600 / h); h = 600 }
           canvas.width = w; canvas.height = h
-          canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-          resolve(canvas.toDataURL('image/jpeg', q))
+          const ctx = canvas.getContext('2d')!
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = 'high'
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/webp', q) || canvas.toDataURL('image/jpeg', q))
         }
         img.src = e.target?.result as string
       }
@@ -90,10 +97,10 @@ export default function AdminDashboard() {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
-    const remaining = 8 - form.images.length
-    if (remaining <= 0) { setMsg('❌ Maximum 8 photos atteint.'); return }
+    const remaining = 15 - form.images.length
+    if (remaining <= 0) { setMsg('❌ Maximum 15 photos atteint.'); return }
     setUploading(true)
-    const compressed = await Promise.all(files.slice(0, remaining).map(f => compressImage(f, 900, 0.72)))
+    const compressed = await Promise.all(files.slice(0, remaining).map(f => compressImage(f, 800, 0.65)))
     setForm(f => ({ ...f, images: [...f.images, ...compressed] }))
     setUploading(false)
     if (fileRef.current) fileRef.current.value = ''
@@ -131,6 +138,7 @@ export default function AdminDashboard() {
       price_label: l.price_label, price_amount: l.price_amount, price_unit: l.price_unit,
       description: l.description, amenities: l.amenities, rooms: l.rooms, surface: l.surface,
       available: l.available, badge: l.badge || '', images: l.images,
+      bathrooms: (l as any).bathrooms || 1, petsAllowed: (l as any).petsAllowed || false, smokingAllowed: (l as any).smokingAllowed || false,
     })
     setEditId(l.id); setShowForm(true); setTab('listings')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -279,7 +287,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="mb-5">
-                    <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Photos (max 8)</p>
+                    <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Photos (max 15)</p>
                     <div className="flex flex-wrap gap-3">
                       {form.images.map((img, i) => (
                         <div key={i} className="relative h-24 w-32 overflow-hidden rounded-xl">
@@ -290,7 +298,7 @@ export default function AdminDashboard() {
                           </button>
                         </div>
                       ))}
-                      {form.images.length < 8 && (
+                      {form.images.length < 15 && (
                         <button onClick={() => fileRef.current?.click()}
                           className="flex h-24 w-36 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-[#C9A84C] transition">
                           {uploading
@@ -378,13 +386,32 @@ export default function AdminDashboard() {
                         ))}
                       </div>
                     </div>
-                    <div className="sm:col-span-2 flex items-center gap-3">
-                      <label className="text-xs uppercase tracking-widest text-slate-400">Disponibilité</label>
-                      <button type="button" onClick={() => setForm(f => ({ ...f, available: !f.available }))}
-                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition ${form.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                        {form.available ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                        {form.available ? 'Disponible' : 'Indisponible'}
-                      </button>
+                    <div className="sm:col-span-2 flex flex-wrap items-center gap-4">
+                      <div>
+                        <label className="text-xs uppercase tracking-widest text-slate-400 block mb-2">Disponibilité</label>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, available: !f.available }))}
+                          className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition ${form.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {form.available ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                          {form.available ? 'Disponible' : 'Indisponible'}
+                        </button>
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-widest text-slate-400 block mb-2">Règles</label>
+                        <div className="flex gap-3">
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:border-[#C9A84C] transition">
+                            <input type="checkbox" checked={(form as any).petsAllowed || false}
+                              onChange={e => setForm(f => ({ ...f, petsAllowed: e.target.checked }))}
+                              className="accent-[#C9A84C]" />
+                            🐾 Animaux acceptés
+                          </label>
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:border-[#C9A84C] transition">
+                            <input type="checkbox" checked={(form as any).smokingAllowed || false}
+                              onChange={e => setForm(f => ({ ...f, smokingAllowed: e.target.checked }))}
+                              className="accent-[#C9A84C]" />
+                            🚬 Fumeur autorisé
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
