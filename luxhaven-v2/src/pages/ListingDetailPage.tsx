@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, Wifi, ParkingCircle, Snowflake, CookingPot, Building2, Shield,
-  Users, CalendarCheck, Star, ArrowLeft, ChevronLeft, ChevronRight, Send, Key, Clock } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import { CONFIG } from '../config'
-import VisitModal from '../components/VisitModal'
-import BookingModal from '../components/BookingModal'
-import Footer from '../components/Footer'
+  Star, ArrowLeft, ChevronLeft, ChevronRight, Key, Clock, Bath } from 'lucide-react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
+import VisitModal from '../components/VisitModal'
+import BookingModal from '../components/BookingModal'
 import { Listing } from '../types'
-
-const TELEGRAM = CONFIG.telegram
 
 const amenityIcons: Record<string, React.ElementType> = {
   WiFi: Wifi, Parking: ParkingCircle, Climatisation: Snowflake,
@@ -26,8 +23,6 @@ export default function ListingDetailPage() {
   const [imgIdx, setImgIdx] = useState(0)
   const [showVisit, setShowVisit] = useState(false)
   const [showBooking, setShowBooking] = useState(false)
-  const [dates, setDates] = useState({ start: '', end: '' })
-  const [guests, setGuests] = useState(1)
 
   useEffect(() => {
     if (!id) return
@@ -50,33 +45,35 @@ export default function ListingDetailPage() {
     </div>
   )
 
-  const images = listing.images.length > 0
+  const images = listing.images && listing.images.length > 0
     ? listing.images
-    : ['/images/listing-1.jpg', '/images/listing-2.jpg', '/images/listing-3.jpg', '/images/gallery-4.jpg', '/images/gallery-5.jpg']
+    : ['/images/listing-1.jpg', '/images/listing-2.jpg', '/images/listing-3.jpg']
 
-  const nights = dates.start && dates.end
-    ? Math.max(1, Math.round((new Date(dates.end).getTime() - new Date(dates.start).getTime()) / 86400000))
-    : 1
-  const total = listing.price_amount * (listing.price_unit === 'nuit' ? nights : 1)
-  const fees = Math.round(total * 0.08)
   const caution = listing.price_amount * 2
-
-  const sendTelegram = (type: 'visite' | 'reservation') => {
-    const msg = encodeURIComponent(
-      `🏠 *${type === 'visite' ? 'VISITE' : 'RÉSERVATION'} – LuxHaven*\n\n` +
-      `🏡 *Appartement:* ${listing.title}\n` +
-      `📍 *Localisation:* ${listing.location}\n` +
-      `💶 *Prix:* ${listing.price_label}\n` +
-      `${dates.start ? `📅 *Arrivée:* ${dates.start}\n` : ''}` +
-      `${dates.end ? `📅 *Départ:* ${dates.end}\n` : ''}` +
-      `👥 *Personnes:* ${guests}`
-    )
-    window.open(`${TELEGRAM}?text=${msg}`, '_blank')
-  }
+  const petsAllowed = (listing as any).petsAllowed || false
+  const smokingAllowed = (listing as any).smokingAllowed || false
 
   return (
     <div className="bg-[#F2F1EF] text-slate-900">
       <Navbar />
+
+      {/* Modals */}
+      {showVisit && (
+        <VisitModal
+          listingTitle={listing.title}
+          listingLocation={listing.location}
+          onClose={() => setShowVisit(false)}
+        />
+      )}
+      {showBooking && (
+        <BookingModal
+          listingTitle={listing.title}
+          listingLocation={listing.location}
+          priceLabel={listing.price_label}
+          onClose={() => setShowBooking(false)}
+        />
+      )}
+
       <div className="mx-auto max-w-7xl px-6 py-10">
         <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-sm text-slate-500 hover:text-[#0A1F44] transition">
           <ArrowLeft className="h-4 w-4" /> Retour
@@ -113,16 +110,17 @@ export default function ListingDetailPage() {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{listing.type}</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{listing.rooms} chambre{listing.rooms > 1 ? 's' : ''}</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{listing.surface} m²</span>
+              <span className="rounded-full bg-white border border-slate-200 px-3 py-1 text-xs text-slate-600">{listing.type}</span>
+              <span className="rounded-full bg-white border border-slate-200 px-3 py-1 text-xs text-slate-600">{listing.rooms} chambre{listing.rooms > 1 ? 's' : ''}</span>
+              {(listing as any).bathrooms && <span className="rounded-full bg-white border border-slate-200 px-3 py-1 text-xs text-slate-600 flex items-center gap-1"><Bath className="h-3 w-3" /> {(listing as any).bathrooms} sdb</span>}
+              <span className="rounded-full bg-white border border-slate-200 px-3 py-1 text-xs text-slate-600">{listing.surface} m²</span>
             </div>
 
             {/* Fiche détaillée */}
-            <div className="mt-8 grid grid-cols-2 gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-5 sm:grid-cols-3">
+            <div className="mt-8 grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-3">
               {[
                 { icon: MapPin, label: 'Localisation', value: listing.location },
-                { icon: Users, label: 'Chambres', value: `${listing.rooms} chambre${listing.rooms > 1 ? 's' : ''}` },
+                { icon: Shield, label: 'Chambres', value: `${listing.rooms} chambre${listing.rooms > 1 ? 's' : ''}` },
                 { icon: Building2, label: 'Surface', value: `${listing.surface} m²` },
                 { icon: Key, label: 'Caution', value: `${caution.toLocaleString('fr-FR')} € (2 mois)` },
                 { icon: Clock, label: 'Durée du bail', value: '1 à 5 ans' },
@@ -138,100 +136,77 @@ export default function ListingDetailPage() {
               ))}
             </div>
 
-            <div className="mt-8 border-t border-slate-100 pt-8">
-              <h2 className="font-display text-xl text-[#0A1F44]">Description</h2>
-              <p className="mt-3 text-slate-600 leading-relaxed">{listing.description || 'Appartement haut de gamme entièrement équipé, idéalement situé.'}</p>
-            </div>
-
-            <div className="mt-8 border-t border-slate-100 pt-8">
-              <h2 className="font-display text-xl text-[#0A1F44]">Équipements</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {listing.amenities.map(a => {
-                  const Icon = amenityIcons[a] || Shield
-                  return (
-                    <div key={a} className="flex items-center gap-2 rounded-xl border border-slate-100 p-3 text-sm text-slate-600">
-                      <Icon className="h-4 w-4 text-[#C9A84C] shrink-0" /> {a}
-                    </div>
-                  )
-                })}
+            {/* Description */}
+            {listing.description && (
+              <div className="mt-8 border-t border-slate-200 pt-8">
+                <h2 className="font-display text-xl text-[#0A1F44]">Description</h2>
+                <p className="mt-3 text-slate-600 leading-relaxed">{listing.description}</p>
               </div>
-            </div>
+            )}
 
-            {/* Conditions de location */}
-            <div className="mt-8 border-t border-slate-100 pt-8">
+            {/* Équipements */}
+            {listing.amenities && listing.amenities.length > 0 && (
+              <div className="mt-8 border-t border-slate-200 pt-8">
+                <h2 className="font-display text-xl text-[#0A1F44]">Équipements</h2>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {listing.amenities.map(a => {
+                    const Icon = amenityIcons[a] || Shield
+                    return (
+                      <div key={a} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                        <Icon className="h-4 w-4 text-[#C9A84C] shrink-0" /> {a}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Conditions */}
+            <div className="mt-8 border-t border-slate-200 pt-8">
               <h2 className="font-display text-xl text-[#0A1F44]">Conditions de location</h2>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Loyer : {listing.price_label}</li>
-                <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Caution : {caution.toLocaleString('fr-FR')} € (2 mois de loyer)</li>
-                <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Durée minimale : 1 an</li>
-                <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Durée maximale : 5 ans</li>
-                <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> Revenu requis : 3× le loyer mensuel</li>
-                {(listing as any).petsAllowed
-                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> 🐾 Animaux acceptés</li>
-                  : <li className="flex items-center gap-2"><span className="text-red-400">✗</span> Animaux non acceptés</li>
+                <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> Loyer : {listing.price_label}</li>
+                <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> Caution : {caution.toLocaleString('fr-FR')} € (2 mois de loyer)</li>
+                <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> Durée minimale : 1 an</li>
+                <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> Durée maximale : 5 ans</li>
+                <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> Revenu requis : 3× le loyer mensuel</li>
+                {petsAllowed
+                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> 🐾 Animaux acceptés</li>
+                  : <li className="flex items-center gap-2"><span className="text-red-400 font-bold">✗</span> Animaux non acceptés</li>
                 }
-                {(listing as any).smokingAllowed
-                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C]">✓</span> 🚬 Fumeur autorisé</li>
-                  : <li className="flex items-center gap-2"><span className="text-red-400">✗</span> Non-fumeur</li>
+                {smokingAllowed
+                  ? <li className="flex items-center gap-2"><span className="text-[#C9A84C] font-bold">✓</span> 🚬 Fumeur autorisé</li>
+                  : <li className="flex items-center gap-2"><span className="text-red-400 font-bold">✗</span> Non-fumeur</li>
                 }
               </ul>
             </div>
           </div>
 
-          {/* Right sticky */}
-          <div className="h-fit rounded-2xl border border-slate-100 p-6 shadow-2xl shadow-slate-200 lg:sticky lg:top-24 space-y-4">
-            <p className="font-display text-2xl text-[#0A1F44]">{listing.price_label}</p>
-            <p className="text-sm text-slate-500">Caution : <span className="font-semibold text-[#0A1F44]">{caution.toLocaleString('fr-FR')} €</span></p>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-xl border border-slate-200 p-3">
-                <p className="text-xs uppercase text-slate-400">Arrivée</p>
-                <div className="mt-1 flex items-center gap-1">
-                  <CalendarCheck className="h-4 w-4 text-[#C9A84C]" />
-                  <input type="date" value={dates.start} onChange={e => setDates(d => ({ ...d, start: e.target.value }))} className="w-full bg-transparent text-sm outline-none" />
-                </div>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-3">
-                <p className="text-xs uppercase text-slate-400">Départ</p>
-                <div className="mt-1 flex items-center gap-1">
-                  <CalendarCheck className="h-4 w-4 text-[#C9A84C]" />
-                  <input type="date" value={dates.end} min={dates.start} onChange={e => setDates(d => ({ ...d, end: e.target.value }))} className="w-full bg-transparent text-sm outline-none" />
-                </div>
-              </div>
+          {/* Right sticky card */}
+          <div className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-xl lg:sticky lg:top-24 space-y-4">
+            <div>
+              <p className="font-display text-2xl text-[#0A1F44]">{listing.price_label}</p>
+              <p className="text-sm text-slate-500 mt-1">
+                Caution : <span className="font-semibold text-[#0A1F44]">{caution.toLocaleString('fr-FR')} €</span>
+              </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 p-3">
-              <p className="text-xs uppercase text-slate-400">Personnes</p>
-              <div className="mt-1 flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#C9A84C]" />
-                <input type="number" min={1} max={20} value={guests} onChange={e => setGuests(Number(e.target.value))} className="w-full bg-transparent text-sm outline-none" />
-              </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-sm text-slate-600 space-y-1">
+              <p className="font-medium text-[#0A1F44]">📱 Contactez-nous via Telegram</p>
+              <p className="text-xs text-slate-500">Réponse garantie en moins de 30 minutes</p>
             </div>
 
-            {dates.start && dates.end && (
-              <div className="space-y-2 border-t border-slate-100 pt-3 text-sm text-slate-600">
-                <div className="flex justify-between">
-                  <span>{listing.price_label} {listing.price_unit === 'nuit' ? `× ${nights} nuit${nights > 1 ? 's' : ''}` : ''}</span>
-                  <span>{total.toLocaleString('fr-FR')} €</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Frais de service (8%)</span>
-                  <span>{fees.toLocaleString('fr-FR')} €</span>
-                </div>
-                <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold text-[#0A1F44]">
-                  <span>Total</span>
-                  <span>{(total + fees).toLocaleString('fr-FR')} €</span>
-                </div>
-              </div>
-            )}
-
-            <button onClick={() => setShowVisit(true)}
-              className="w-full rounded-full border border-[#229ED9] py-2.5 text-sm font-semibold text-[#229ED9] flex items-center justify-center gap-2 transition hover:bg-[#229ED9] hover:text-white">
-              <Send className="h-4 w-4" /> Planifier une visite
+            <button
+              onClick={() => setShowVisit(true)}
+              className="w-full rounded-full border-2 border-[#229ED9] py-3 text-sm font-semibold text-[#229ED9] flex items-center justify-center gap-2 transition hover:bg-[#229ED9] hover:text-white"
+            >
+              📅 Planifier une visite
             </button>
 
-            <button onClick={() => setShowBooking(true)}
-              className="w-full rounded-full bg-[#C9A84C] py-3 text-sm font-semibold text-[#0A1F44] shadow-lg flex items-center justify-center gap-2 transition hover:-translate-y-0.5">
+            <button
+              onClick={() => setShowBooking(true)}
+              className="w-full rounded-full bg-[#C9A84C] py-3 text-sm font-semibold text-[#0A1F44] shadow-lg flex items-center justify-center gap-2 transition hover:-translate-y-0.5"
+            >
               ✅ Réserver maintenant
             </button>
 

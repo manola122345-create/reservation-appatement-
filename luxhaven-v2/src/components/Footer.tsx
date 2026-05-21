@@ -1,9 +1,10 @@
 import { Send, Mail, Phone, MapPin } from 'lucide-react'
-import { CONFIG } from '../config'
+import { useSettings } from '../hooks/useSettings'
 
 interface FooterProps { lang?: 'fr'|'en' }
 
 export default function Footer({ lang = 'fr' }: FooterProps) {
+  const s = useSettings()
   const t = (fr: string, en: string) => lang === 'fr' ? fr : en
 
   return (
@@ -14,16 +15,16 @@ export default function Footer({ lang = 'fr' }: FooterProps) {
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A84C] text-[#0A1F44] font-bold">LH</div>
               <div>
-                <p className="font-display text-xl">LuxHaven</p>
+                <p className="font-display text-xl">{s.companyName}</p>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Luxury Rentals</p>
               </div>
             </div>
             <p className="text-sm text-slate-300">
               {t('Votre partenaire de confiance pour la location d\'appartements haut de gamme.', 'Your trusted partner for luxury apartment rentals.')}
             </p>
-            <div className="space-y-1 text-xs text-slate-400 pt-2">
-              <p>{t('Numéro d\'entreprise', 'Company number')}: {CONFIG.companyNumber}</p>
-            </div>
+            {s.companyNumber && s.companyNumber !== 'XXXXXXXX' && (
+              <p className="text-xs text-slate-400">{t('N° entreprise', 'Company no.')}: {s.companyNumber}</p>
+            )}
           </div>
 
           <div>
@@ -44,22 +45,30 @@ export default function Footer({ lang = 'fr' }: FooterProps) {
           <div>
             <p className="font-display text-lg">Contact</p>
             <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <a href={CONFIG.telegram} target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 hover:text-white transition">
-                <Send className="h-4 w-4 text-[#229ED9] shrink-0" /> {CONFIG.telegramUsername}
-              </a>
-              <a href={`mailto:${CONFIG.email}`} className="flex items-center gap-2 hover:text-white transition">
-                <Mail className="h-4 w-4 text-[#C9A84C] shrink-0" /> {CONFIG.email}
-              </a>
-              <a href={`tel:${CONFIG.phone}`} className="flex items-center gap-2 hover:text-white transition">
-                <Phone className="h-4 w-4 text-[#C9A84C] shrink-0" /> {CONFIG.phone}
-              </a>
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-[#C9A84C] shrink-0 mt-0.5" />
-                <span>{CONFIG.address}</span>
-              </div>
-              <a href={CONFIG.telegram} target="_blank" rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+              {s.telegramUsername && (
+                <a href={s.telegram} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 hover:text-white transition">
+                  <Send className="h-4 w-4 text-[#229ED9] shrink-0" /> {s.telegramUsername}
+                </a>
+              )}
+              {s.email && (
+                <a href={`mailto:${s.email}`} className="flex items-center gap-2 hover:text-white transition">
+                  <Mail className="h-4 w-4 text-[#C9A84C] shrink-0" /> {s.email}
+                </a>
+              )}
+              {s.phone && (
+                <a href={`tel:${s.phone}`} className="flex items-center gap-2 hover:text-white transition">
+                  <Phone className="h-4 w-4 text-[#C9A84C] shrink-0" /> {s.phone}
+                </a>
+              )}
+              {s.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-[#C9A84C] shrink-0 mt-0.5" />
+                  <span>{s.address}</span>
+                </div>
+              )}
+              <a href={s.telegram} target="_blank" rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5">
                 <Send className="h-4 w-4" /> Telegram
               </a>
             </div>
@@ -67,8 +76,10 @@ export default function Footer({ lang = 'fr' }: FooterProps) {
         </div>
 
         <div className="mt-10 border-t border-slate-700 pt-6 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-          <span>© {new Date().getFullYear()} LuxHaven. {t('Tous droits réservés.', 'All rights reserved.')}</span>
-          <span>{t('N° entreprise', 'Company no.')}: {CONFIG.companyNumber}</span>
+          <span>© {new Date().getFullYear()} {s.companyName}. {t('Tous droits réservés.', 'All rights reserved.')}</span>
+          {s.companyNumber && s.companyNumber !== 'XXXXXXXX' && (
+            <span>{t('N° entreprise', 'Company no.')}: {s.companyNumber}</span>
+          )}
         </div>
       </div>
     </footer>

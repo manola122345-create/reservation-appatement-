@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Home, CalendarCheck, CreditCard, LogOut,
+  LayoutDashboard, Home, CalendarCheck, CreditCard, LogOut, Settings,
   Plus, Pencil, Trash2, ToggleLeft, ToggleRight, UploadCloud, X, Eye
 } from 'lucide-react'
 import {
@@ -12,7 +12,7 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Listing, Booking } from '../types'
 
-type Tab = 'dashboard' | 'listings' | 'reservations' | 'payments'
+type Tab = 'dashboard' | 'listings' | 'reservations' | 'payments' | 'settings'
 
 const AMENITIES = ['WiFi','Parking','Climatisation','Cuisine équipée','Balcon','Sécurité 24/7','Piscine','Gym','Terrasse','Jacuzzi']
 const TYPES = ['Courte durée','Longue durée','Colocation','Meublé'] as const
@@ -48,8 +48,43 @@ export default function AdminDashboard() {
   const [msg, setMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const adminEmail = import.meta.env.VITE_ADMIN_EMAIL as string || 'Admin'
+  const [settings, setSettings] = useState({
+    telegram: '', telegramUsername: '', email: '', phone: '',
+    address: '', companyNumber: '', companyName: 'LuxHaven',
+  })
+  const [savingSettings, setSavingSettings] = useState(false)
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => { fetchAll(); fetchSettings() }, [])
+
+  async function fetchSettings() {
+    try {
+      const { doc, getDoc } = await import('firebase/firestore')
+      const snap = await getDoc(doc(db, 'settings', 'site'))
+      if (snap.exists()) setSettings(s => ({ ...s, ...snap.data() }))
+      else {
+        // Load defaults from config
+        const { CONFIG } = await import('../config')
+        setSettings({
+          telegram: CONFIG.telegram, telegramUsername: CONFIG.telegramUsername,
+          email: CONFIG.email, phone: CONFIG.phone,
+          address: CONFIG.address, companyNumber: CONFIG.companyNumber,
+          companyName: CONFIG.companyName,
+        })
+      }
+    } catch {}
+  }
+
+  async function saveSettings() {
+    setSavingSettings(true)
+    try {
+      const { doc, setDoc } = await import('firebase/firestore')
+      await setDoc(doc(db, 'settings', 'site'), settings)
+      setMsg('✅ Paramètres sauvegardés !')
+    } catch (e: any) {
+      setMsg('❌ Erreur: ' + e.message)
+    }
+    setSavingSettings(false)
+  }
 
   async function fetchAll() {
     try {
@@ -174,6 +209,7 @@ export default function AdminDashboard() {
     { id: 'listings', label: 'Annonces', icon: Home },
     { id: 'reservations', label: 'Réservations', icon: CalendarCheck },
     { id: 'payments', label: 'Paiements', icon: CreditCard },
+    { id: 'settings', label: 'Paramètres', icon: Settings },
   ]
 
   const changeTab = (t: Tab) => { setTab(t); setShowForm(false); setMsg('') }
@@ -545,6 +581,88 @@ export default function AdminDashboard() {
                       {bookings.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-slate-400">Aucune transaction.</td></tr>}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PARAMÈTRES */}
+          {tab === 'settings' && (
+            <div className="space-y-6">
+              <h1 className="font-serif text-2xl text-[#0A1F44]">Paramètres du site</h1>
+              <p className="text-sm text-slate-500">Ces informations apparaissent sur le site public (footer, page contact).</p>
+
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
+                <h2 className="font-serif text-lg text-[#0A1F44] border-b border-slate-100 pb-3">📱 Contact</h2>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Username Telegram (ex: @alicevip4)</label>
+                    <input value={settings.telegramUsername}
+                      onChange={e => setSettings(s => ({ ...s, telegramUsername: e.target.value, telegram: `https://t.me/${e.target.value.replace('@','')}` }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="@alicevip4" />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Email public</label>
+                    <input type="email" value={settings.email}
+                      onChange={e => setSettings(s => ({ ...s, email: e.target.value }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="contact@luxhaven.com" />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Téléphone</label>
+                    <input type="tel" value={settings.phone}
+                      onChange={e => setSettings(s => ({ ...s, phone: e.target.value }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="+229 00 00 00 00" />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Adresse physique</label>
+                    <input value={settings.address}
+                      onChange={e => setSettings(s => ({ ...s, address: e.target.value }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="Herengracht 182, Amsterdam" />
+                  </div>
+                </div>
+
+                <h2 className="font-serif text-lg text-[#0A1F44] border-b border-slate-100 pb-3 pt-2">🏢 Société</h2>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Nom de la société</label>
+                    <input value={settings.companyName}
+                      onChange={e => setSettings(s => ({ ...s, companyName: e.target.value }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="LuxHaven" />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-slate-400">Numéro d'entreprise (RCCM / KvK / SIRET...)</label>
+                    <input value={settings.companyNumber}
+                      onChange={e => setSettings(s => ({ ...s, companyNumber: e.target.value }))}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#C9A84C]"
+                      placeholder="RB/COT/24/A/XXXX" />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700 mb-4">
+                    ⚠️ Après avoir sauvegardé, rafraîchis la page du site pour voir les changements.
+                  </div>
+                  <button onClick={saveSettings} disabled={savingSettings}
+                    className="rounded-full bg-[#C9A84C] px-8 py-2.5 text-sm font-semibold text-[#0A1F44] transition hover:-translate-y-0.5 disabled:opacity-60">
+                    {savingSettings ? 'Sauvegarde...' : '💾 Sauvegarder les paramètres'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                <h2 className="font-serif text-lg text-[#0A1F44] mb-3">🔐 Compte admin</h2>
+                <p className="text-sm text-slate-500 mb-2">Pour changer l'email ou mot de passe de connexion admin :</p>
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-sm text-slate-600 space-y-1">
+                  <p>1. Va sur <strong>Vercel → Settings → Environment Variables</strong></p>
+                  <p>2. Modifie <code className="bg-slate-200 px-1 rounded">VITE_ADMIN_EMAIL</code> et <code className="bg-slate-200 px-1 rounded">VITE_ADMIN_PASSWORD</code></p>
+                  <p>3. Clique <strong>Redeploy</strong> pour appliquer</p>
                 </div>
               </div>
             </div>
